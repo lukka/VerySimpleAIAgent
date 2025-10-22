@@ -1,0 +1,36 @@
+{
+  "name": "verysimpleagent",
+  "version": "1.0.0",
+  "description": "VerySimpleAgent - AI Agent console application with LLM integration and tools",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test:phases": "node test-phases.js"
+  },
+  "bin": {
+    "agent": "./index.js"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "llm",
+    "openai",
+    "anthropic",
+    "claude",
+    "ollama",
+    "console",
+    "cli",
+    "tools",
+    "sandbox",
+    "think"
+  ],
+  "author": "Luca Cappa",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
