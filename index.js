@@ -6,11 +6,11 @@
  */
 
 // Prevent multiple execution
-if (global.__myagent_running) {
+if (global.__verysimpleaiagent_running) {
     console.error('Warning: Application already running!');
     process.exit(1);
 }
-global.__myagent_running = true;
+global.__verysimpleaiagent_running = true;
 
 const { TerminalUI, BG_COLORS } = require('./terminal-ui');
 const { Agent } = require('./agent-node');
@@ -72,7 +72,7 @@ let agent;
 let config;
 
 // Display welcome message
-ui.log('VerySimpleAgent with Tools: JavaScriptTool + ShellCommandTool + ThinkTool');
+ui.log('VerySimpleAIAgent with Tools: JavaScriptTool + ShellCommandTool + ThinkTool');
 ui.log('Commands: bye, config, history, help');
 ui.log('');
 
@@ -95,7 +95,7 @@ function initializeAgent() {
         // Initialize visualization with actual system and tool tokens
         ui.initializeVisualizationFromAgent(agent);
 
-        ui.log('VerySimpleAgent initialized successfully!');
+        ui.log('VerySimpleAIAgent initialized successfully!');
 
         if (config.isValid()) {
             ui.log(`Provider: ${config.provider} | Model: ${config.model}`);
@@ -271,8 +271,8 @@ agent.breakpoint('Waiting for question from user', {
 let isProcessingInput = false;
 
 // Handle user input (register only once)
-if (!global.__myagent_handler_registered) {
-    global.__myagent_handler_registered = true;
+if (!global.__verysimpleaiagent_handler_registered) {
+    global.__verysimpleaiagent_handler_registered = true;
 
     // Phase: wait for a user's question
     ui.on('line', async (input) => {

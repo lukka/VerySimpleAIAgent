@@ -175,7 +175,7 @@ class TerminalUI {
 
         // Initialize top panel with welcome message (enough lines to test scrolling)
         this.addToTopPanel('');
-        this.addToTopPanel('Welcome to VerySimpleAgent! 🤖');
+        this.addToTopPanel('Welcome to VerySimpleAIAgent! 🤖');
         this.addToTopPanel('');
         this.addToTopPanel('The agent\'s internal reasoning and prompt building will be displayed here as it works.');
         this.addToTopPanel('');
@@ -395,7 +395,7 @@ class TerminalUI {
 
     // Scroll up in top panel (show older content)
     scrollUp() {
-        const contentLinesAvailable = (this.topPanelHeight - 2) - 1; // -2 for borders, -1 for Agent/LLM indicator
+        const contentLinesAvailable = (this.topPanelHeight - 2);
         const maxScroll = Math.max(0, this.topPanelLines.length - contentLinesAvailable);
         if (this.topPanelScroll < maxScroll) {
             this.topPanelScroll++;
@@ -649,7 +649,7 @@ class TerminalUI {
             // Find the line with the question in top panel
             const lines = this.topPanelLines;
             const totalLines = lines.length;
-            const topPanelVisibleLines = this.topPanelHeight - 3; // -2 for borders, -1 for Agent/LLM indicator
+            const topPanelVisibleLines = this.topPanelHeight - 2; // -2 for borders
             
             // The question is typically on the last line
             for (let i = totalLines - 1; i >= Math.max(0, totalLines - topPanelVisibleLines); i--) {
@@ -680,7 +680,7 @@ class TerminalUI {
         output.push('\x1b[1;1H'); // Move to top-left (no clear screen)
 
         // ===== FIRST PANEL: Agent Algorithm (top frame, fixed height) =====
-        const firstPanelTitle = ' 🤖 VerySimpleAgent Algorithm ';
+        const firstPanelTitle = ' 🤖 VerySimpleAIAgent Algorithm ';
         const firstTitleWidth = getVisualWidth(firstPanelTitle);
         const firstDashCount = Math.max(0, this.width - 2 - firstTitleWidth);
         const firstPanelBorder = '┌' + firstPanelTitle + '─'.repeat(firstDashCount) + '┐';
@@ -704,15 +704,14 @@ class TerminalUI {
         output.push('└' + '─'.repeat(firstBottomDashes) + '┘');
 
         // ===== SECOND PANEL: Agent Internal Process Logs (scrollable) =====
-        const title = ' VerySimpleAgent Internal Process Logs ';
-        const topScrollableLines = (this.topPanelHeight - 2) - 1; // -2 for borders, -1 for Agent/LLM indicator
+        const title = ' VerySimpleAIAgent Internal Process Logs ';
+        const topScrollableLines = this.topPanelHeight - 2; // -2 for borders
         const topBorder = this.generateScrollBorder(title, this.topPanelLines.length, topScrollableLines, this.topPanelScroll);
         output.push(topBorder);
 
-        // Second panel content (scrollable with Agent/LLM indicator at bottom)
-        // Reserve 1 line for Agent/LLM indicator
+        // Second panel content (scrollable)
         const topContentHeight = this.topPanelHeight - 2;
-        const contentLinesAvailable = topContentHeight - 1; // Reserve 1 line for Agent/LLM indicator
+        const contentLinesAvailable = topContentHeight;
         const totalLines = this.topPanelLines.length;
 
         // Calculate which lines to show based on scroll position
@@ -721,7 +720,7 @@ class TerminalUI {
         const startIndex = Math.max(0, totalLines - contentLinesAvailable - this.topPanelScroll);
         const endIndex = startIndex + contentLinesAvailable;
 
-        // Render content lines (all except the last reserved line)
+        // Render content lines
         for (let i = 0; i < contentLinesAvailable; i++) {
             const lineIndex = startIndex + i;
             const lineObj = this.topPanelLines[lineIndex];
@@ -735,36 +734,6 @@ class TerminalUI {
                 output.push('│' + this.fitText('', this.width - 2) + '│');
             }
         }
-
-        // Always render the Agent/LLM indicator (1 line tall) at the bottom
-        let statusLine;
-        if (this.messageAnimation === 'sending') {
-            // Left to right animation: colors flow from left to right
-            const colors = ['\x1b[90m', '\x1b[37m', '\x1b[97m', '\x1b[37m', '\x1b[90m']; // dark gray -> light gray -> bright white -> light gray -> dark gray
-            const frame = this.messageAnimationFrame % 5;
-            const arrow1 = colors[(frame + 0) % 5] + '░' + '\x1b[0m';
-            const arrow2 = colors[(frame + 1) % 5] + '▒' + '\x1b[0m';
-            const arrow3 = colors[(frame + 2) % 5] + '▓' + '\x1b[0m';
-            const arrow4 = colors[(frame + 3) % 5] + '█' + '\x1b[0m';
-            const arrow5 = colors[(frame + 4) % 5] + '▶' + '\x1b[0m';
-            statusLine = `🤖 Agent  ${arrow1}${arrow2}${arrow3}${arrow4}${arrow5}  Sending to LLM 🧠 ...`;
-        } else if (this.messageAnimation === 'receiving') {
-            // Right to left animation: colors flow from right to left
-            const colors = ['\x1b[90m', '\x1b[37m', '\x1b[97m', '\x1b[37m', '\x1b[90m']; // dark gray -> light gray -> bright white -> light gray -> dark gray
-            const frame = this.messageAnimationFrame % 5;
-            const arrow1 = colors[(frame + 4) % 5] + '◀' + '\x1b[0m';
-            const arrow2 = colors[(frame + 3) % 5] + '█' + '\x1b[0m';
-            const arrow3 = colors[(frame + 2) % 5] + '▓' + '\x1b[0m';
-            const arrow4 = colors[(frame + 1) % 5] + '▒' + '\x1b[0m';
-            const arrow5 = colors[(frame + 0) % 5] + '░' + '\x1b[0m';
-            statusLine = `🤖 Agent  ${arrow1}${arrow2}${arrow3}${arrow4}${arrow5}  Received response from LLM 🧠`;
-        } else {
-            statusLine = '🤖 Agent     LLM 🧠';
-        }
-        
-        const contentWidth = this.width - 2;
-        const paddedStatusLine = this.fitText(statusLine, contentWidth, BG_COLORS.RESET);
-        output.push('│' + paddedStatusLine + '│');
 
         // Second panel bottom border with activity indicator
         let secondPanelBottomBorder;
@@ -1218,21 +1187,21 @@ class TerminalUI {
             const content = fs.readFileSync(agentFilePath, 'utf-8');
             const lines = content.split('\n');
 
-            // Algorithm is at lines 166-175 (1-indexed), which is 165-174 (0-indexed)
-            const algoStartLine = 165;
-            const algoEndLine = 174;
+            // Algorithm is at lines 168-176 (1-indexed), which is 167-175 (0-indexed)
+            const algoStartLine = 167;
+            const algoEndLine = 175;
 
             // Map algorithm lines to their actual implementation line numbers
             // These are the lines AFTER the "// Phase:" comment (the actual code)
             const phaseLineMapping = {
-                "wait for a user's question": { file: indexFilePath, line: 271 }, // Line after "// Phase: wait for a user's question" in index.js
-                'chat_history.push(question)': { file: agentFilePath, line: 187 },      // Line after "// Phase: chat_history.push(question)"
-                'response = llm.chat(prompt)': { file: agentFilePath, line: 252 },      // Line after "// Phase: response = llm.chat(prompt)"
-                'if tool calls in response exist': { file: agentFilePath, line: 264 },  // Line after "// Phase: if tool calls in response exist"
-                'result = tool.invoke()': { file: agentFilePath, line: 358 },           // Line after "// Phase: result = tool.invoke()" in executeToolCalls
-                "prompt += tool's invocation + result": { file: agentFilePath, line: 274 }, // Line after "// Phase: prompt += tool's invocation + result"
-                'chat_history.push(response)': { file: agentFilePath, line: 198 },      // Line after "// Phase: chat_history.push(response)"
-                'display response': { file: agentFilePath, line: 209 }                   // Line after "// Phase: display response"
+                "wait for a user's question": { file: indexFilePath, line: 278 }, // Line after "// Phase: wait for a user's question" in index.js
+                'chat_history.push(question)': { file: agentFilePath, line: 186 },      // Line after "// Phase: chat_history.push(question)"
+                'response = llm.chat(prompt)': { file: agentFilePath, line: 244 },      // Line after "// Phase: response = llm.chat(prompt)"
+                'if tool calls in response exist': { file: agentFilePath, line: 271 },  // Line after "// Phase: if tool calls in response exist"
+                'result = tool.invoke()': { file: agentFilePath, line: 368 },           // Line after "// Phase: result = tool.invoke()" in executeToolCalls
+                "prompt += tool's invocation + result": { file: agentFilePath, line: 281 }, // Line after "// Phase: prompt += tool's invocation + result"
+                'chat_history.push(response)': { file: agentFilePath, line: 197 },      // Line after "// Phase: chat_history.push(response)"
+                'display response': { file: indexFilePath, line: 240 }                   // Line after "// Phase: display response"
             };
 
             // Store the raw algorithm lines and file info

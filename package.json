@@ -1,7 +1,7 @@
 {
-  "name": "verysimpleagent",
+  "name": "VerySimpleAIAgent",
   "version": "1.0.0",
-  "description": "VerySimpleAgent - AI Agent console application with LLM integration and tools",
+  "description": "One of the simplest LLM-based agents you'll ever see.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

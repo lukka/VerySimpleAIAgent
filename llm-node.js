@@ -17,6 +17,7 @@ class LLMConfig {
     };
 
     constructor() {
+        this.configFile = CONFIG_FILE;
         this.loadConfig();
     }
 

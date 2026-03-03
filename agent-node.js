@@ -1,9 +1,11 @@
-// VerySimpleAgent - Coordinates tools and processes user questions
+// VerySimpleAIAgent - Coordinates tools and processes user questions
 
 const { estimateTokens } = require('./utils');
 
 // System prompt template - used for generating the full system prompt with available tools
-const SYSTEM_PROMPT_TEMPLATE = (tools) => `You are a helpful AI assistant with access to tools. You can help users with various tasks.
+const SYSTEM_PROMPT_TEMPLATE = (tools, configFile) => `You are a helpful AI assistant with access to tools. You can help users with various tasks.
+
+Configuration file in use: ${configFile || 'not configured'}
 
 Available tools:
 ${tools.map(tool => `- ${tool.name}: ${tool.description}`).join('\n')}
@@ -35,7 +37,7 @@ class Agent {
         this.lastVisualizationLineCount = 0; // Track lines for in-place update
 
         // System prompt
-        this.systemPrompt = SYSTEM_PROMPT_TEMPLATE(tools);
+        this.systemPrompt = SYSTEM_PROMPT_TEMPLATE(tools, llmClient?.config?.configFile);
     }
 
     // Get color codes based on terminal support
@@ -155,7 +157,7 @@ class Agent {
 
     // Update system prompt when tools change
     updateSystemPrompt() {
-        this.systemPrompt = SYSTEM_PROMPT_TEMPLATE(this.tools);
+        this.systemPrompt = SYSTEM_PROMPT_TEMPLATE(this.tools, this.llmClient?.config?.configFile);
     }
 
     // Get tool by name
@@ -169,7 +171,7 @@ class Agent {
     // │   ┌──▶ response = llm.chat(prompt)
     // │   │   if tool calls in response exist
     // │   │     result = tool.invoke()
-    // │   └───── prompt += tool's invocation + result
+    // │   └────prompt += tool's invocation + result
     // │   chat_history.push(response)
     // └───display response
     async processQuestion(question) {
@@ -235,10 +237,27 @@ class Agent {
                 await this.showPromptVisualization(iteration, promptMessages, toolSchemas);
 
                 // Call LLM with proper cleanup handling
-                const llmResponse = await this.withAnimation(() =>
-                    // Phase: response = llm.chat(prompt)
-                    this.llmClient.chat(promptMessages, toolSchemas)
-                );
+                let llmResponse;
+                try {
+                    llmResponse = await this.withAnimation(() =>
+                        // Phase: response = llm.chat(prompt)
+                        this.llmClient.chat(promptMessages, toolSchemas)
+                    );
+                } catch (llmError) {
+                    const configFile = this.llmClient?.config?.configFile || 'unknown';
+                    console.error(`🤖 LLM call failed (iteration ${iteration}):`, llmError.message);
+                    return [
+                        `⚠️  LLM API call failed: ${llmError.message}`,
+                        ``,
+                        `Config file: ${configFile}`,
+                        ``,
+                        `Possible fixes:`,
+                        `  • Type "config" to review or update your API settings`,
+                        `  • Verify your API key is valid and has sufficient quota`,
+                        `  • Check that the endpoint URL is correct`,
+                        `  • Ensure the model name is spelled correctly`,
+                    ].join('\n');
+                }
 
                 // Visualize response AFTER receiving it
                 await this.showResponseVisualization(iteration, llmResponse);
@@ -282,12 +301,15 @@ class Agent {
             return finalAnswer;
 
         } catch (error) {
-            console.error('🤖 LLM error:', error.message);
-            // If LLM fails, try fallback
-            if (error.message.includes('configuration')) {
-                return `⚙️ ${error.message}\n\nRun the app and type "config" to set up your LLM API.`;
-            }
-            return `Error communicating with LLM: ${error.message}\n\nFalling back to simple mode...\n\n${this.simpleFallback(question)}`;
+            console.error('🤖 Agent error:', error.message);
+            const configFile = this.llmClient?.config?.configFile || 'unknown';
+            return [
+                `⚠️  Agent error: ${error.message}`,
+                ``,
+                `Config file: ${configFile}`,
+                ``,
+                `Type "config" to review your API settings.`,
+            ].join('\n');
         }
     }
 

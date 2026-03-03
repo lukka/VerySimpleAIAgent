@@ -1,4 +1,4 @@
-# VerySimpleAgent
+# VerySimpleAIAgent
 
 The objective of this project is to demystify what an LLM based agent is and what it's actually doing by looking at how an agent is implemented in code.
 
@@ -6,24 +6,32 @@ Jump to the [**Complete Explanation**](#-complete-explanation) to discover how a
 
 ## 📑 Table of Contents
 
-- [✨ Features](#-features)
-- [🚀 Quick Start](#-quick-start)
-- [📖 Complete Explanation](#-complete-explanation)
-  - [How LLMs and Agents Work Together](#how-llms-and-agents-work-together)
-  - [The Agentic Loop](#the-agentic-loop)
-  - [Why This Works](#why-this-works)
-- [🔧 Configuration](#-configuration)
-- [🛠️ Available Tools](#️-available-tools)
+- [VerySimpleAIAgent](#verysimpleaiagent)
+  - [📑 Table of Contents](#-table-of-contents)
+  - [✨ Features](#-features)
+  - [🚀 Quick Start](#-quick-start)
+    - [How It Works](#how-it-works)
+  - [📖 Complete Explanation](#-complete-explanation)
+    - [How LLMs and Agents Work Together](#how-llms-and-agents-work-together)
+    - [The Agentic Loop](#the-agentic-loop)
+    - [Why This Works](#why-this-works)
+  - [🔧 Configuration](#-configuration)
+  - [🛠️ Available Tools](#️-available-tools)
+    - [JavaScriptTool](#javascripttool)
+    - [ShellCommand](#shellcommand)
+    - [ThinkTool](#thinktool)
 
 ## ✨ Features
 
-- 🤖 **LLM-Powered**: Works with OpenAI, Azure OpenAI, Anthropic (Claude), or Ollama
+- 🤖 **LLM-Powered**: Works with Azure OpenAI, OpenAI, Anthropic (Claude), or Ollama
 - 🔄 **Multi-Iteration Agent**: Automatically handles complex multi-step tasks (up to 42 iterations)
 - 🛠️ **Three Tools**: JavaScriptTool (VM sandbox), ShellCommand (with confirmation), ThinkTool (reasoning)
 - 🔍 **Interactive Inspection**: Review prompts and responses with token breakdown before/after each LLM call
-- 🎯 **Phase-Based Debugging**: Real-time algorithm visualization with current phase highlighted
+- 🎯 **Phase-Based Debugging**: Real-time algorithm visualization with current execution phase highlighted
 - 📊 **Token Visualization**: Color-coded token usage by component (system, tools, user, assistant, results)
 - 🔒 **Secure**: VM sandbox for JavaScript, user confirmation for shell commands
+
+![Inspection view](inspection.png)
 
 ## 🚀 Quick Start
 
@@ -31,6 +39,8 @@ Jump to the [**Complete Explanation**](#-complete-explanation) to discover how a
 npm install
 npm start
 ```
+
+> **Tip**: `npm start` is the short form of `npm run start`.
 
 Type `config` to configure your LLM provider, then start chatting!
 
@@ -46,7 +56,7 @@ The agent's core algorithm loops until the task is complete:
 // │   ┌──▶ response = llm.chat(prompt)
 // │   │   if tool calls in response exist
 // │   │     result = tool.invoke()
-// │   └───── prompt += tool's invocation + result
+// │   └─────prompt += tool's invocation + result
 // │   chat_history.push(response)
 // └───display response
 ```
@@ -66,25 +76,20 @@ The algorithm is displayed in the top panel with the current phase highlighted a
 
 **User asks**: "What day is it?"
 
-**Step 1**: Agent adds question to history  
-**Step 2**: Agent sends to LLM with system prompt, tools, and history  
-**Step 3**: LLM responds with a tool call request:
+1. Agent adds question to history
+2. Agent sends to LLM with system prompt, tools, and history
+3. LLM responds with a tool call request (see [screenshot](inspection.png)):
 ```json
-{"tool_calls": [{"function": {"name": "JavaScriptTool", "arguments": "..."}}]}
+{"tool_calls": [{"function": {"name": "JavaScriptTool", ... { "script": "new Date().toLocaleDateString()"}}]}
 ```
-
-**Step 4**: Agent executes tool locally → `"Thursday, October 31, 2025"`  
-**Step 5**: Agent adds tool call + result to conversation, loops back to Step 2
-
-**Step 2 (again)**: Agent sends updated conversation to LLM  
-**Step 3 (again)**: LLM responds with final answer (no tool calls):
+4. Agent executes tool locally → `"Thursday, October 31, 2025"`
+5. Agent adds tool call + result to conversation *(loop repeats from step 2)*
+6. LLM responds with final answer (no tool calls):
 ```json
 {"content": "Today is Thursday, October 31, 2025."}
 ```
-
-**Step 6**: Loop exits (no tool calls)  
-**Step 7**: Agent saves response to history  
-**Step 8**: Display answer to user
+7. Loop exits, agent saves response to history
+8. Display answer to user
 
 ### Why This Works
 
@@ -100,14 +105,14 @@ Run `config` command or edit `.agent-config.json`:
 
 ```json
 {
-  "provider": "openai",
-  "apiKey": "sk-...",
-  "endpoint": "https://api.openai.com/v1/chat/completions",
+  "provider": "azure",
+  "apiKey": "YOUR-API-KEY",
+  "endpoint": "https://YOUR-RESOURCE.openai.azure.com/openai/deployments/YOUR-DEPLOYMENT/chat/completions?api-version=2024-02-15-preview",
   "model": "gpt-4"
 }
 ```
 
-**Supported providers**: OpenAI, Azure OpenAI, Anthropic (Claude), Ollama, Custom
+**Supported providers**: Azure OpenAI, Open AI, Anthropic (Claude), Ollama, Custom
 
 You can also use environment variables: `OPENAI_API_KEY`, `OPENAI_ENDPOINT`, `OPENAI_MODEL`
 
@@ -139,4 +144,4 @@ Internal reasoning and analysis before taking action.
 
 **Author**: Luca Cappa ([@lukka](https://github.com/lukka))  
 **License**: MIT  
-**Repository**: [github.com/lukka/agent-insight](https://github.com/lukka/agent-insight)
+**Repository**: [github.com/lukka/VerySimpleAIAgent](https://github.com/lukka/VerySimpleAIAgent)
